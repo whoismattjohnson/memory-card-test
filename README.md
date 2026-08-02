@@ -26,7 +26,7 @@ Swift implementation.
 
 ## Requirements
 
-- macOS 13 or later
+- macOS 13 or later, Apple Silicon or Intel (the release is a universal binary)
 - Swift 6 toolchain (Xcode or Command Line Tools) to build from source
 
 ## Building
@@ -35,8 +35,14 @@ Swift implementation.
 ./build.sh
 ```
 
-This compiles a release build and wraps it into `Memory Card Test.app`, generating
-the app icon from `icon.png`.
+This builds both the arm64 and x86_64 slices, merges them into a universal binary,
+and wraps it into `Memory Card Test.app`, generating the app icon from `icon.png`.
+
+For faster local iteration you can build only your own machine's architecture:
+
+```bash
+NATIVE_ONLY=1 ./build.sh
+```
 
 To produce the distributable zip (app + README + license):
 

@@ -1,5 +1,7 @@
 # Swift Package Manager build products
 .build/
+.build-arm64/
+.build-x86_64/
 *.o
 *.swiftmodule
 

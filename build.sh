@@ -1,13 +1,32 @@
 #!/bin/bash
 # Builds the app and packages it into a double-clickable "Memory Card Test.app" bundle.
+#
+# By default this produces a UNIVERSAL binary (Apple Silicon + Intel) so the app
+# runs on any Mac running macOS 13 or later. Building both slices takes about
+# twice as long; for quick local iteration set NATIVE_ONLY=1 to build just this
+# machine's architecture.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-echo "==> Compiling (release)…"
-swift build -c release
-
-BIN=".build/release/MemoryCardTest"
 APP="Memory Card Test.app"
+DEPLOY_TARGET="13.0"
+
+if [[ "${NATIVE_ONLY:-0}" == "1" ]]; then
+    echo "==> Compiling (release, native arch only)…"
+    swift build -c release
+    BIN=".build/release/MemoryCardTest"
+else
+    echo "==> Compiling (release, arm64)…"
+    swift build -c release --triple "arm64-apple-macosx${DEPLOY_TARGET}"  --scratch-path .build-arm64
+    echo "==> Compiling (release, x86_64)…"
+    swift build -c release --triple "x86_64-apple-macosx${DEPLOY_TARGET}" --scratch-path .build-x86_64
+
+    echo "==> Merging into a universal binary…"
+    BIN="$(mktemp -d)/MemoryCardTest"
+    lipo -create -output "$BIN" \
+        .build-arm64/release/MemoryCardTest \
+        .build-x86_64/release/MemoryCardTest
+fi
 
 echo "==> Packaging $APP…"
 rm -rf "$APP" "CardCheck.app"   # remove old-named bundle too
@@ -35,4 +54,5 @@ fi
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
 
 echo "==> Done: $(pwd)/$APP"
+echo "    Architectures: $(lipo -archs "$APP/Contents/MacOS/MemoryCardTest")"
 echo "    Launch with:  open \"$APP\""
