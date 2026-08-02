@@ -1,0 +1,13 @@
+# Swift Package Manager build products
+.build/
+*.o
+*.swiftmodule
+
+# Packaged app + release artifacts (rebuild with ./package.sh)
+Memory Card Test.app/
+Memory Card Test.zip
+/Memory Card Test/
+*.icns
+
+# macOS
+.DS_Store
